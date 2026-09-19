@@ -3,10 +3,9 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
-export default defineConfig(({ command }) => ({
-  // GitHub Pages serves this project site under /ArchPromptStudio-GH/.
-  // Dev keeps the root base so localhost works unchanged.
-  base: command === 'build' ? '/ArchPromptStudio-GH/' : '/',
+export default defineConfig(() => ({
+  // Served from the domain root (Netlify).
+  base: '/',
   logLevel: 'error', // Suppress warnings, only show errors
   plugins: [
     base44({

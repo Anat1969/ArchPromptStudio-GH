@@ -83,20 +83,21 @@ Classified for later migration off Base44:
 - Remote (source of truth): https://github.com/Anat1969/ArchPromptStudio-GH.git
 - Default branch: `main`.
 
-## Deployment (GitHub Pages)
-- Live URL: https://anat1969.github.io/ArchPromptStudio-GH/
-- CI: `.github/workflows/deploy.yml` builds on every push to `main` and deploys.
-- Vite `base` is `/ArchPromptStudio-GH/` for `build` (root for dev); router uses
-  `basename={import.meta.env.BASE_URL}`. Workflow copies `index.html` -> `404.html`
-  as SPA fallback so client-side routes resolve on refresh.
-- Build env comes from repo **variables** (Settings > Secrets and variables >
-  Actions > Variables): `VITE_BASE44_APP_ID`, `VITE_BASE44_APP_BASE_URL`
-  (public client values; same as `.env.local`).
-- OPEN RISK to verify after first deploy: the production bundle calls the Base44
-  backend at the absolute `VITE_BASE44_APP_BASE_URL` (no dev proxy in prod). If
-  the backend's CORS does not allow the github.io origin, login / API calls will
-  fail — then a proxy-capable host (Vercel/Netlify function) or Base44 CORS
-  config is needed.
+## Deployment (Netlify)
+- Config: `netlify.toml` (build `npm run build`, publish `dist`).
+- **Why Netlify, not GitHub Pages**: the app makes RELATIVE `/api/*` calls that
+  rely on a same-origin proxy to Base44 (the dev Vite proxy). GitHub Pages is
+  static-only (no proxy) so its API calls 404 — verified live. Netlify's
+  `[[redirects]]` proxy (`/api/* -> arch-prompt-flow.base44.app/api/:splat`,
+  status 200) replicates the dev proxy, so no CORS and no code changes.
+- SPA fallback: `/* -> /index.html` (status 200) in `netlify.toml`.
+- Build env is in `netlify.toml [build.environment]` (`VITE_BASE44_APP_ID`,
+  `VITE_BASE44_APP_BASE_URL`) — public client values, so no Netlify UI setup needed.
+- Vite `base` is `/` (served from domain root).
+- **Manual step (user)**: connect the repo in Netlify (Add new site -> Import
+  from GitHub -> ArchPromptStudio-GH). Netlify reads `netlify.toml` automatically.
+  Auto-deploys on every push to `main`. Live URL will be `https://<name>.netlify.app`.
+- GitHub Pages was tried and disabled (kept for history in git; workflow removed).
 
 ## Current state
 - Local folder is the active project; Base44 export lives here.

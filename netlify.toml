@@ -1,0 +1,27 @@
+# Netlify deployment for ArchPrompt Studio
+# Connect this repo in Netlify (Add new site -> Import from GitHub); these
+# settings are picked up automatically.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Base44 client config — public client-side values (also in local .env.local).
+  VITE_BASE44_APP_ID = "69c80849f1fbef3a6d3f0817"
+  VITE_BASE44_APP_BASE_URL = "https://arch-prompt-flow.base44.app"
+
+# Proxy API calls to the Base44 backend. This replicates the local dev proxy,
+# so the app's relative /api/* requests reach Base44 with no CORS issues.
+# Must come BEFORE the SPA catch-all (first match wins).
+[[redirects]]
+  from = "/api/*"
+  to = "https://arch-prompt-flow.base44.app/api/:splat"
+  status = 200
+  force = true
+
+# SPA fallback — serve index.html for client-side routes.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
