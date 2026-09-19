@@ -57,7 +57,16 @@ Classified for later migration off Base44:
 
 ## Build / validation
 - `npm install` → `npm run build` succeeds (outputs `./dist`).
-- Build warns that `VITE_BASE44_APP_ID` isn't set — expected without a real `.env.local`.
+- `npm run dev` verified: with `.env.local` set (App ID + App Base URL), the
+  Vite proxy routes `/api` to the Base44 backend and the app reaches the real
+  Base44 login screen — i.e. backend connectivity confirmed. Login is required
+  (Base44 auth) to see project data.
+- Live values (kept only in local `.env.local`, never committed):
+  `VITE_BASE44_APP_ID=69c80849f1fbef3a6d3f0817`,
+  `VITE_BASE44_APP_BASE_URL=https://arch-prompt-flow.base44.app`.
+- Note: this project's `dev` script runs plain `vite`, which ignores an injected
+  PORT and starts at 5173 (incrementing if taken). If 5173 is busy, open the
+  actual port Vite printed / is listening on.
 
 ## Known issues
 - `npm run lint` reports 3 pre-existing unused-import errors (from the Base44
@@ -73,6 +82,21 @@ Classified for later migration off Base44:
 ## GitHub
 - Remote (source of truth): https://github.com/Anat1969/ArchPromptStudio-GH.git
 - Default branch: `main`.
+
+## Deployment (GitHub Pages)
+- Live URL: https://anat1969.github.io/ArchPromptStudio-GH/
+- CI: `.github/workflows/deploy.yml` builds on every push to `main` and deploys.
+- Vite `base` is `/ArchPromptStudio-GH/` for `build` (root for dev); router uses
+  `basename={import.meta.env.BASE_URL}`. Workflow copies `index.html` -> `404.html`
+  as SPA fallback so client-side routes resolve on refresh.
+- Build env comes from repo **variables** (Settings > Secrets and variables >
+  Actions > Variables): `VITE_BASE44_APP_ID`, `VITE_BASE44_APP_BASE_URL`
+  (public client values; same as `.env.local`).
+- OPEN RISK to verify after first deploy: the production bundle calls the Base44
+  backend at the absolute `VITE_BASE44_APP_BASE_URL` (no dev proxy in prod). If
+  the backend's CORS does not allow the github.io origin, login / API calls will
+  fail — then a proxy-capable host (Vercel/Netlify function) or Base44 CORS
+  config is needed.
 
 ## Current state
 - Local folder is the active project; Base44 export lives here.

@@ -3,7 +3,10 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  // GitHub Pages serves this project site under /ArchPromptStudio-GH/.
+  // Dev keeps the root base so localhost works unchanged.
+  base: command === 'build' ? '/ArchPromptStudio-GH/' : '/',
   logLevel: 'error', // Suppress warnings, only show errors
   plugins: [
     base44({
@@ -16,5 +19,5 @@ export default defineConfig({
       visualEditAgent: true
     }),
     react(),
-  ]
-});
+  ],
+}));
