@@ -1,0 +1,93 @@
+{
+  "name": "Project",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05e4\u05e8\u05d5\u05d9\u05e7\u05d8"
+    },
+    "number": {
+      "type": "number",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e1\u05d9\u05d3\u05d5\u05e8\u05d9"
+    },
+    "poetic_description": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05e4\u05d5\u05d0\u05d8\u05d9 \u05e9\u05e0\u05d5\u05e6\u05e8 \u05d0\u05d5\u05d8\u05d5\u05de\u05d8\u05d9\u05ea"
+    },
+    "inspiration_image": {
+      "type": "string",
+      "description": "URL \u05dc\u05ea\u05de\u05d5\u05e0\u05ea \u05d4\u05e9\u05e8\u05d0\u05d4"
+    },
+    "style_synthesis": {
+      "type": "object",
+      "properties": {
+        "styleA": {
+          "type": "string"
+        },
+        "styleB": {
+          "type": "string"
+        }
+      }
+    },
+    "visual_description": {
+      "type": "object",
+      "properties": {
+        "materials": {
+          "type": "string"
+        },
+        "palette": {
+          "type": "string"
+        },
+        "light": {
+          "type": "string"
+        },
+        "atmosphere": {
+          "type": "string"
+        }
+      }
+    },
+    "boards": {
+      "type": "object",
+      "properties": {
+        "materials": {
+          "type": "object"
+        },
+        "colors": {
+          "type": "object"
+        },
+        "mood": {
+          "type": "object"
+        }
+      }
+    },
+    "rooms": {
+      "type": "object",
+      "properties": {
+        "living": {
+          "type": "object"
+        },
+        "kitchen": {
+          "type": "object"
+        },
+        "bedroom": {
+          "type": "object"
+        },
+        "bathroom": {
+          "type": "object"
+        }
+      }
+    },
+    "building_types": {
+      "type": "object",
+      "properties": {
+        "private": {
+          "type": "object"
+        },
+        "building": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  "required": []
+}
