@@ -171,31 +171,31 @@ function CoverPage({ project }) {
   const heroUrl     = project.inspirationImage || allImages[0] || null;
 
   return (
-    <div className="w-full h-full relative bg-[#0e0e0e] overflow-hidden flex">
+    <div className="w-full h-full relative bg-[hsl(var(--mag-bg))] overflow-hidden flex">
       {/* Full-bleed hero image — fixed proportion, no stretch */}
       <div className="relative w-[60%] h-full flex-shrink-0 overflow-hidden">
         {heroUrl ? (
           <>
             <img src={heroUrl} alt={displayName} className="w-full h-full object-cover object-center" />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/10 to-black/80" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[hsl(var(--mag-scrim)/0.1)] to-[hsl(var(--mag-scrim)/0.8)]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--mag-scrim)/0.6)] via-transparent to-transparent" />
           </>
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-[#1a1a1a] to-[#0e0e0e]" />
+          <div className="w-full h-full bg-gradient-to-br from-[hsl(var(--mag-bg-2))] to-[hsl(var(--mag-bg))]" />
         )}
       </div>
 
       {/* Right text column */}
-      <div className="flex-1 bg-[#0e0e0e] flex flex-col justify-between px-10 py-14 border-r border-white/5 overflow-y-auto">
+      <div className="flex-1 bg-[hsl(var(--mag-bg))] flex flex-col justify-between px-10 py-14 border-r border-[hsl(var(--mag-hair)/0.06)] overflow-y-auto">
         <div>
           <p className="font-mono text-xs tracking-[0.4em] text-gold/60 mb-10 uppercase">Prompt Studio</p>
           <div className="w-6 h-px bg-gold mb-10" />
-          <span className="font-mono text-xs text-white/25 block mb-3">#{String(project.number).padStart(2, '0')}</span>
-          <h1 className="font-display text-5xl font-light text-white leading-tight tracking-wide mb-8">
+          <span className="font-mono text-xs text-[hsl(var(--mag-fg)/0.25)] block mb-3">#{String(project.number).padStart(2, '0')}</span>
+          <h1 className="font-display text-5xl font-light text-[hsl(var(--mag-fg))] leading-tight tracking-wide mb-8">
             {displayName}
           </h1>
           {project.poeticDescription && (
-            <p className="font-mono text-base text-white/55 leading-relaxed italic border-r-2 border-gold/40 pr-5">
+            <p className="font-mono text-base text-[hsl(var(--mag-fg)/0.55)] leading-relaxed italic border-r-2 border-gold/40 pr-5">
               {project.poeticDescription}
             </p>
           )}
@@ -203,23 +203,23 @@ function CoverPage({ project }) {
 
         {synthesis && (
           <div className="flex flex-col gap-4">
-            <p className="font-mono text-xs text-white/20 uppercase tracking-widest">design tension</p>
-            <p className="font-display text-2xl text-white/75 font-light italic leading-snug" dir="ltr">
+            <p className="font-mono text-xs text-[hsl(var(--mag-fg)/0.2)] uppercase tracking-widest">design tension</p>
+            <p className="font-display text-2xl text-[hsl(var(--mag-fg)/0.75)] font-light italic leading-snug" dir="ltr">
               "{synthesis.tension}"
             </p>
-            <div className="w-full h-px bg-white/10 my-2" />
+            <div className="w-full h-px bg-[hsl(var(--mag-hair)/0.1)] my-2" />
             <div className="flex flex-wrap gap-2">
               {['materials', 'palette', 'light', 'atmosphere'].map(cat => {
                 const val = project.visualDescription?.[cat];
                 if (!val) return null;
                 return (
-                  <span key={cat} className="font-mono text-xs px-2 py-1 border border-white/10 text-white/35">
+                  <span key={cat} className="font-mono text-xs px-2 py-1 border border-[hsl(var(--mag-hair)/0.1)] text-[hsl(var(--mag-fg)/0.35)]">
                     {getVisualLabel(cat, val)}
                   </span>
                 );
               })}
             </div>
-            <p className="font-mono text-xs text-white/15 tracking-widest mt-1">
+            <p className="font-mono text-xs text-[hsl(var(--mag-fg)/0.15)] tracking-widest mt-1">
               {new Date(project.updatedAt).toLocaleDateString('he-IL', { year: 'numeric', month: 'long' })}
             </p>
           </div>
@@ -245,25 +245,25 @@ function ImagePage({ project, spread }) {
   // ── Layout A: Full-bleed image, text block at bottom ──
   if (layout === 'hero-text-bottom') {
     return (
-      <div className="w-full h-full relative overflow-hidden bg-[#111]">
+      <div className="w-full h-full relative overflow-hidden bg-[hsl(var(--mag-bg-2))]">
         <img src={imageUrl} alt={imageLabel} className="w-full h-full object-cover object-center" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--mag-scrim)/0.95)] via-[hsl(var(--mag-scrim)/0.4)] to-transparent" />
         <div className="absolute top-10 right-10 flex items-center gap-3">
           <div className="w-5 h-px bg-gold" />
-          <span className="font-mono text-sm text-white/50 uppercase tracking-widest">{sectionTag}</span>
+          <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.5)] uppercase tracking-widest">{sectionTag}</span>
         </div>
         <div className="absolute bottom-0 left-0 right-0 px-14 py-12">
           <p className="font-mono text-sm text-gold/80 uppercase tracking-widest mb-4">{imageLabel}</p>
-          <h2 className="font-display text-5xl font-light text-white leading-tight mb-6">{displayName}</h2>
+          <h2 className="font-display text-5xl font-light text-[hsl(var(--mag-fg))] leading-tight mb-6">{displayName}</h2>
           {caption && (
-            <p className="font-display text-3xl text-white/80 leading-relaxed max-w-2xl font-light italic">״{caption}״</p>
+            <p className="font-display text-3xl text-[hsl(var(--mag-fg)/0.8)] leading-relaxed max-w-2xl font-light italic">״{caption}״</p>
           )}
           {synthesis && (
-            <p className="font-display text-xl text-white/35 mt-6 leading-relaxed italic font-light" dir="ltr">"{synthesis.token}"</p>
+            <p className="font-display text-xl text-[hsl(var(--mag-fg)/0.35)] mt-6 leading-relaxed italic font-light" dir="ltr">"{synthesis.token}"</p>
           )}
         </div>
         <div className="absolute bottom-12 left-14">
-          <span className="font-mono text-sm text-white/15">{String(pageIndex + 2).padStart(2, '0')}</span>
+          <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.15)]">{String(pageIndex + 2).padStart(2, '0')}</span>
         </div>
       </div>
     );
@@ -272,32 +272,32 @@ function ImagePage({ project, spread }) {
   // ── Layout B: Text left, image right ──
   if (layout === 'text-left-image-right') {
     return (
-      <div className="w-full h-full flex bg-background">
-        <div className="w-[45%] flex-shrink-0 flex flex-col justify-between px-12 py-16 border-l border-border overflow-y-auto">
+      <div className="w-full h-full flex bg-[hsl(var(--mag-bg))]">
+        <div className="w-[45%] flex-shrink-0 flex flex-col justify-between px-12 py-16 border-l border-[hsl(var(--mag-hair)/0.12)] overflow-y-auto">
           <div>
             <div className="flex items-center gap-3 mb-10">
               <div className="w-5 h-px bg-gold" />
               <span className="font-mono text-sm text-gold/70 uppercase tracking-widest">{sectionTag}</span>
             </div>
-            <h2 className="font-display text-6xl font-light text-foreground leading-tight mb-6">{imageLabel}</h2>
-            <div className="w-8 h-px bg-border mb-8" />
+            <h2 className="font-display text-6xl font-light text-[hsl(var(--mag-fg))] leading-tight mb-6">{imageLabel}</h2>
+            <div className="w-8 h-px bg-[hsl(var(--mag-hair)/0.15)] mb-8" />
             {caption && (
-              <p className="font-display text-2xl text-foreground/80 leading-relaxed font-light italic">״{caption}״</p>
+              <p className="font-display text-2xl text-[hsl(var(--mag-fg)/0.8)] leading-relaxed font-light italic">״{caption}״</p>
             )}
           </div>
           <div>
             {synthesis && (
               <div className="border-r-2 border-gold/30 pr-5 mb-6">
-                <p className="font-display text-2xl text-foreground/70 italic font-light leading-snug">
+                <p className="font-display text-2xl text-[hsl(var(--mag-fg)/0.7)] italic font-light leading-snug">
                   "{synthesis.tension}"
                 </p>
               </div>
             )}
-            <span className="font-mono text-sm text-muted-foreground/30">{String(pageIndex + 2).padStart(2, '0')}</span>
+            <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.3)]">{String(pageIndex + 2).padStart(2, '0')}</span>
           </div>
         </div>
         {/* Image — natural proportions via object-cover, no distortion */}
-        <div className="flex-1 relative overflow-hidden bg-[#111]">
+        <div className="flex-1 relative overflow-hidden bg-[hsl(var(--mag-bg-2))]">
           <img src={imageUrl} alt={imageLabel} className="w-full h-full object-cover object-center" />
         </div>
       </div>
@@ -307,29 +307,29 @@ function ImagePage({ project, spread }) {
   // ── Layout C: Image left, text right ──
   if (layout === 'image-left-text-right') {
     return (
-      <div className="w-full h-full flex bg-background">
+      <div className="w-full h-full flex bg-[hsl(var(--mag-bg))]">
         {/* Image — natural proportions */}
-        <div className="w-[55%] flex-shrink-0 relative overflow-hidden bg-[#111]">
+        <div className="w-[55%] flex-shrink-0 relative overflow-hidden bg-[hsl(var(--mag-bg-2))]">
           <img src={imageUrl} alt={imageLabel} className="w-full h-full object-cover object-center" />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/15" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[hsl(var(--mag-scrim)/0.15)]" />
         </div>
-        <div className="flex-1 flex flex-col justify-between px-12 py-16 border-r border-border overflow-y-auto">
+        <div className="flex-1 flex flex-col justify-between px-12 py-16 border-r border-[hsl(var(--mag-hair)/0.12)] overflow-y-auto">
           <div>
-            <span className="font-mono text-sm text-muted-foreground/40 uppercase tracking-widest block mb-2">{sectionTag}</span>
-            <div className="w-full h-px bg-border mb-8" />
-            <h2 className="font-display text-5xl font-light text-foreground leading-tight mb-6">{imageLabel}</h2>
+            <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.4)] uppercase tracking-widest block mb-2">{sectionTag}</span>
+            <div className="w-full h-px bg-[hsl(var(--mag-hair)/0.15)] mb-8" />
+            <h2 className="font-display text-5xl font-light text-[hsl(var(--mag-fg))] leading-tight mb-6">{imageLabel}</h2>
             {caption && (
-              <p className="font-display text-2xl text-foreground/80 leading-relaxed font-light italic">״{caption}״</p>
+              <p className="font-display text-2xl text-[hsl(var(--mag-fg)/0.8)] leading-relaxed font-light italic">״{caption}״</p>
             )}
           </div>
           <div className="flex flex-col gap-4">
             {synthesis && (
               <>
-                <div className="w-full h-px bg-border" />
-                <p className="font-display text-lg text-muted-foreground/60 leading-relaxed italic font-light" dir="ltr">"{synthesis.material}"</p>
+                <div className="w-full h-px bg-[hsl(var(--mag-hair)/0.15)]" />
+                <p className="font-display text-lg text-[hsl(var(--mag-fg)/0.6)] leading-relaxed italic font-light" dir="ltr">"{synthesis.material}"</p>
               </>
             )}
-            <span className="font-mono text-sm text-muted-foreground/25">{String(pageIndex + 2).padStart(2, '0')}</span>
+            <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.25)]">{String(pageIndex + 2).padStart(2, '0')}</span>
           </div>
         </div>
       </div>
@@ -338,26 +338,26 @@ function ImagePage({ project, spread }) {
 
   // ── Layout D: Full-bleed + side caption strip ──
   return (
-    <div className="w-full h-full relative overflow-hidden bg-[#111]">
+    <div className="w-full h-full relative overflow-hidden bg-[hsl(var(--mag-bg-2))]">
       <img src={imageUrl} alt={imageLabel} className="w-full h-full object-cover object-center" />
-      <div className="absolute inset-0 bg-gradient-to-l from-black/90 via-black/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-l from-[hsl(var(--mag-scrim)/0.9)] via-[hsl(var(--mag-scrim)/0.3)] to-transparent" />
       <div className="absolute top-0 left-0 bottom-0 w-[40%] flex flex-col justify-center px-12 gap-7 overflow-y-auto">
         <div className="flex items-center gap-3">
           <div className="w-5 h-px bg-gold" />
-          <span className="font-mono text-sm text-white/50 uppercase tracking-widest">{sectionTag}</span>
+          <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.5)] uppercase tracking-widest">{sectionTag}</span>
         </div>
-        <h2 className="font-display text-5xl font-light text-white leading-tight">{imageLabel}</h2>
+        <h2 className="font-display text-5xl font-light text-[hsl(var(--mag-fg))] leading-tight">{imageLabel}</h2>
         {caption && (
-          <p className="font-display text-2xl text-white/80 leading-relaxed font-light italic">״{caption}״</p>
+          <p className="font-display text-2xl text-[hsl(var(--mag-fg)/0.8)] leading-relaxed font-light italic">״{caption}״</p>
         )}
         {synthesis && (
           <div className="border-r border-gold/30 pr-5 mt-2">
-            <p className="font-display text-xl text-white/55 italic font-light leading-snug">
+            <p className="font-display text-xl text-[hsl(var(--mag-fg)/0.55)] italic font-light leading-snug">
               "{synthesis.token}"
             </p>
           </div>
         )}
-        <span className="font-mono text-sm text-white/20 mt-4">{String(pageIndex + 2).padStart(2, '0')}</span>
+        <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.2)] mt-4">{String(pageIndex + 2).padStart(2, '0')}</span>
       </div>
     </div>
   );
@@ -371,10 +371,10 @@ function ColophonPage({ project }) {
   const allImages   = getAllImages(project);
 
   return (
-    <div className="w-full h-full flex bg-[#0e0e0e]">
+    <div className="w-full h-full flex bg-[hsl(var(--mag-bg))]">
       <div className="w-[55%] flex-shrink-0 relative overflow-hidden">
         {allImages.length >= 4 ? (
-          <div className="grid grid-cols-2 grid-rows-2 h-full gap-px bg-white/5">
+          <div className="grid grid-cols-2 grid-rows-2 h-full gap-px bg-[hsl(var(--mag-hair)/0.05)]">
             {allImages.slice(-4).map((url, i) => (
               <div key={i} className="relative overflow-hidden">
                 <img src={url} alt="" className="w-full h-full object-cover object-center" />
@@ -382,7 +382,7 @@ function ColophonPage({ project }) {
             ))}
           </div>
         ) : allImages.length >= 2 ? (
-          <div className="flex flex-col h-full gap-px bg-white/5">
+          <div className="flex flex-col h-full gap-px bg-[hsl(var(--mag-hair)/0.05)]">
             {allImages.slice(-2).map((url, i) => (
               <div key={i} className="flex-1 relative overflow-hidden">
                 <img src={url} alt="" className="w-full h-full object-cover object-center" />
@@ -392,26 +392,26 @@ function ColophonPage({ project }) {
         ) : allImages[0] ? (
           <img src={allImages[0]} alt="" className="w-full h-full object-cover object-center" />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-[#1a1a1a] to-[#0e0e0e]" />
+          <div className="w-full h-full bg-gradient-to-br from-[hsl(var(--mag-bg-2))] to-[hsl(var(--mag-bg))]" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0e0e0e]/80 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[hsl(var(--mag-bg)/0.8)] pointer-events-none" />
       </div>
 
       <div className="flex-1 flex flex-col justify-between px-12 py-16 overflow-y-auto">
         <div>
           <p className="font-mono text-sm text-gold/40 uppercase tracking-[0.4em] mb-10">כולופון</p>
-          <h2 className="font-display text-5xl font-light text-white leading-tight mb-2">{displayName}</h2>
-          <p className="font-mono text-sm text-white/20 mb-10">
+          <h2 className="font-display text-5xl font-light text-[hsl(var(--mag-fg))] leading-tight mb-2">{displayName}</h2>
+          <p className="font-mono text-sm text-[hsl(var(--mag-fg)/0.2)] mb-10">
             #{String(project.number).padStart(2, '0')} —{' '}
             {new Date(project.updatedAt).toLocaleDateString('he-IL', { year: 'numeric', month: 'long' })}
           </p>
           {project.poeticDescription && (
-            <p className="font-mono text-base text-white/55 leading-relaxed italic border-r-2 border-gold/30 pr-5 mb-8">
+            <p className="font-mono text-base text-[hsl(var(--mag-fg)/0.55)] leading-relaxed italic border-r-2 border-gold/30 pr-5 mb-8">
               {project.poeticDescription}
             </p>
           )}
           {synthesis && (
-            <div className="flex flex-col gap-5 border-r border-white/10 pr-5">
+            <div className="flex flex-col gap-5 border-r border-[hsl(var(--mag-hair)/0.1)] pr-5">
               {[
                 { label: 'synthesis token',  val: synthesis.token },
                 { label: 'material palette', val: synthesis.material },
@@ -419,27 +419,27 @@ function ColophonPage({ project }) {
                 { label: 'architect ref',    val: synthesis.architect },
               ].filter(r => r.val).map(row => (
                 <div key={row.label}>
-                  <p className="font-mono text-xs text-white/20 uppercase tracking-widest mb-1">{row.label}</p>
-                  <p className="font-mono text-sm text-white/50 leading-relaxed" dir="ltr">{row.val}</p>
+                  <p className="font-mono text-xs text-[hsl(var(--mag-fg)/0.2)] uppercase tracking-widest mb-1">{row.label}</p>
+                  <p className="font-mono text-sm text-[hsl(var(--mag-fg)/0.5)] leading-relaxed" dir="ltr">{row.val}</p>
                 </div>
               ))}
             </div>
           )}
         </div>
         <div className="flex flex-col gap-3">
-          <div className="w-full h-px bg-white/10" />
+          <div className="w-full h-px bg-[hsl(var(--mag-hair)/0.1)]" />
           <div className="flex flex-wrap gap-2">
             {['materials', 'palette', 'light', 'atmosphere'].map(cat => {
               const val = project.visualDescription?.[cat];
               if (!val) return null;
               return (
-                <span key={cat} className="font-mono text-sm px-2 py-1 border border-white/10 text-white/30">
+                <span key={cat} className="font-mono text-sm px-2 py-1 border border-[hsl(var(--mag-hair)/0.1)] text-[hsl(var(--mag-fg)/0.3)]">
                   {getVisualLabel(cat, val)}
                 </span>
               );
             })}
           </div>
-          <p className="font-mono text-xs text-white/10 tracking-widest mt-2">PROMPT STUDIO — ARCHITECTURAL MAGAZINE</p>
+          <p className="font-mono text-xs text-[hsl(var(--mag-fg)/0.1)] tracking-widest mt-2">PROMPT STUDIO — ARCHITECTURAL MAGAZINE</p>
         </div>
       </div>
     </div>

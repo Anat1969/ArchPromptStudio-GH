@@ -31,6 +31,25 @@
   }
 }
 
+/* ─── Magazine viewer theme (scoped) ──────────────────────────────────────────
+   HSL channels so Tailwind arbitrary values can add opacity, e.g.
+   text-[hsl(var(--mag-fg)/0.4)]. Toggle via data-theme on .mag-root. */
+.mag-root {
+  /* dark (default editorial look) */
+  --mag-bg: 0 0% 5%;      /* ~#0e0e0e page surface */
+  --mag-bg-2: 0 0% 7%;    /* ~#111 image backdrop */
+  --mag-fg: 0 0% 100%;    /* text */
+  --mag-scrim: 0 0% 0%;   /* gradient scrim over images (keeps text legible) */
+  --mag-hair: 0 0% 100%;  /* hairlines/borders base (used at low opacity) */
+}
+.mag-root[data-theme="light"] {
+  --mag-bg: 0 0% 100%;    /* white page surface */
+  --mag-bg-2: 0 0% 96%;   /* near-white image backdrop */
+  --mag-fg: 0 0% 8%;      /* near-black text */
+  --mag-scrim: 0 0% 100%; /* white scrim so dark text stays legible over images */
+  --mag-hair: 0 0% 0%;    /* borders become dark hairlines */
+}
+
 @layer base {
   * {
     @apply border-border;

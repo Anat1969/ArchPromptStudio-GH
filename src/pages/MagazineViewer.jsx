@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Sun, Moon } from 'lucide-react';
 import { loadProjects } from '../lib/storage';
 import MagazineSpread, { getDisplayName } from '../components/MagazineSpread';
 
 const BOARD_LABELS    = { materials: 'חומרים', colors: 'צבעים', mood: 'אווירה' };
 const ROOM_LABELS     = { living: 'סלון', kitchen: 'מטבח', bedroom: 'חדר שינה', bathroom: 'חדר רחצה' };
 const BUILDING_LABELS = { private: 'בית פרטי', building: 'בניין' };
+
+const THEME_KEY = 'magazine_theme';
 
 // Build one page per image
 function buildPages(project) {
@@ -62,6 +65,17 @@ export default function MagazineViewer() {
   const [projectIdx, setProjectIdx] = useState(0);
   const [pageIdx, setPageIdx]     = useState(0);
   const [loading, setLoading]     = useState(true);
+  const [theme, setTheme]         = useState(() => {
+    try { return localStorage.getItem(THEME_KEY) || 'dark'; } catch { return 'dark'; }
+  });
+
+  const toggleTheme = useCallback(() => {
+    setTheme(prev => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem(THEME_KEY, next); } catch { /* ignore */ }
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     loadProjects().then(all => {
@@ -111,14 +125,14 @@ export default function MagazineViewer() {
   }, [goNext, goPrev, navigate]);
 
   if (loading) return (
-    <div className="fixed inset-0 bg-[#0e0e0e] flex items-center justify-center">
+    <div className="mag-root fixed inset-0 bg-[hsl(var(--mag-bg))] flex items-center justify-center" data-theme={theme}>
       <div className="w-6 h-6 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
     </div>
   );
 
   if (!project) return (
-    <div className="fixed inset-0 bg-[#0e0e0e] flex items-center justify-center">
-      <p className="font-mono text-sm text-white/40">פרויקט לא נמצא</p>
+    <div className="mag-root fixed inset-0 bg-[hsl(var(--mag-bg))] flex items-center justify-center" data-theme={theme}>
+      <p className="font-mono text-sm text-[hsl(var(--mag-fg)/0.4)]">פרויקט לא נמצא</p>
     </div>
   );
 
@@ -127,25 +141,34 @@ export default function MagazineViewer() {
   const currentPage = pages[pageIdx];
 
   return (
-    <div className="fixed inset-0 bg-[#0e0e0e] flex flex-col overflow-hidden" dir="rtl">
+    <div className="mag-root fixed inset-0 bg-[hsl(var(--mag-bg))] flex flex-col overflow-hidden" dir="rtl" data-theme={theme}>
 
       {/* Top bar — minimal */}
-      <div className="flex items-center justify-between px-8 py-3 bg-black/60 border-b border-white/5 z-10 flex-shrink-0 backdrop-blur-sm">
+      <div className="flex items-center justify-between px-8 py-3 bg-[hsl(var(--mag-scrim)/0.6)] border-b border-[hsl(var(--mag-hair)/0.06)] z-10 flex-shrink-0 backdrop-blur-sm">
         <button
           onClick={() => navigate('/gallery')}
-          className="font-mono text-xs text-white/30 hover:text-white/70 transition-colors tracking-widest"
+          className="font-mono text-xs text-[hsl(var(--mag-fg)/0.35)] hover:text-[hsl(var(--mag-fg)/0.7)] transition-colors tracking-widest"
         >
           ← מקרא
         </button>
         <div className="flex items-center gap-3">
-          <span className="font-display text-sm text-white/50 tracking-wider">{project ? getDisplayName(project) : ''}</span>
-          <span className="font-mono text-xs text-white/20">|</span>
-          <span className="font-mono text-xs text-white/20">{pageIdx + 1} / {pages.length}</span>
+          <span className="font-display text-sm text-[hsl(var(--mag-fg)/0.5)] tracking-wider">{project ? getDisplayName(project) : ''}</span>
+          <span className="font-mono text-xs text-[hsl(var(--mag-fg)/0.2)]">|</span>
+          <span className="font-mono text-xs text-[hsl(var(--mag-fg)/0.2)]">{pageIdx + 1} / {pages.length}</span>
         </div>
-        {projects.length > 1
-          ? <span className="font-mono text-xs text-white/20">פרויקט {projectIdx + 1} / {projects.length}</span>
-          : <div className="w-24" />
-        }
+        <div className="flex items-center gap-4 min-w-24 justify-end">
+          {projects.length > 1 && (
+            <span className="font-mono text-xs text-[hsl(var(--mag-fg)/0.2)]">פרויקט {projectIdx + 1} / {projects.length}</span>
+          )}
+          <button
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'מסך בהיר' : 'מסך כהה'}
+            aria-label={theme === 'dark' ? 'עבור למסך בהיר' : 'עבור למסך כהה'}
+            className="w-7 h-7 rounded-full border border-[hsl(var(--mag-hair)/0.15)] hover:border-gold flex items-center justify-center text-[hsl(var(--mag-fg)/0.45)] hover:text-gold transition-colors"
+          >
+            {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+          </button>
+        </div>
       </div>
 
       {/* Page content */}
@@ -156,10 +179,10 @@ export default function MagazineViewer() {
         {canPrev && (
           <button
             onClick={goPrev}
-            className="absolute right-0 top-0 h-full w-16 flex items-center justify-center group z-10 hover:bg-white/5 transition-colors"
+            className="absolute right-0 top-0 h-full w-16 flex items-center justify-center group z-10 hover:bg-[hsl(var(--mag-hair)/0.05)] transition-colors"
           >
-            <div className="w-8 h-8 rounded-full border border-white/10 group-hover:border-white/30 flex items-center justify-center transition-all">
-              <span className="text-white/30 group-hover:text-white/80 text-lg leading-none">›</span>
+            <div className="w-8 h-8 rounded-full border border-[hsl(var(--mag-hair)/0.1)] group-hover:border-[hsl(var(--mag-hair)/0.3)] flex items-center justify-center transition-all">
+              <span className="text-[hsl(var(--mag-fg)/0.3)] group-hover:text-[hsl(var(--mag-fg)/0.8)] text-lg leading-none">›</span>
             </div>
           </button>
         )}
@@ -168,17 +191,17 @@ export default function MagazineViewer() {
         {canNext && (
           <button
             onClick={goNext}
-            className="absolute left-0 top-0 h-full w-16 flex items-center justify-center group z-10 hover:bg-white/5 transition-colors"
+            className="absolute left-0 top-0 h-full w-16 flex items-center justify-center group z-10 hover:bg-[hsl(var(--mag-hair)/0.05)] transition-colors"
           >
-            <div className="w-8 h-8 rounded-full border border-white/10 group-hover:border-white/30 flex items-center justify-center transition-all">
-              <span className="text-white/30 group-hover:text-white/80 text-lg leading-none">‹</span>
+            <div className="w-8 h-8 rounded-full border border-[hsl(var(--mag-hair)/0.1)] group-hover:border-[hsl(var(--mag-hair)/0.3)] flex items-center justify-center transition-all">
+              <span className="text-[hsl(var(--mag-fg)/0.3)] group-hover:text-[hsl(var(--mag-fg)/0.8)] text-lg leading-none">‹</span>
             </div>
           </button>
         )}
       </div>
 
       {/* Bottom progress dots */}
-      <div className="flex items-center justify-center gap-1.5 py-3 bg-black/40 flex-shrink-0">
+      <div className="flex items-center justify-center gap-1.5 py-3 bg-[hsl(var(--mag-scrim)/0.4)] flex-shrink-0">
         {pages.map((_, i) => (
           <button
             key={i}
@@ -186,7 +209,7 @@ export default function MagazineViewer() {
             className={`transition-all duration-300 rounded-full ${
               i === pageIdx
                 ? 'w-6 h-1.5 bg-gold'
-                : 'w-1.5 h-1.5 bg-white/15 hover:bg-white/30'
+                : 'w-1.5 h-1.5 bg-[hsl(var(--mag-fg)/0.15)] hover:bg-[hsl(var(--mag-fg)/0.3)]'
             }`}
           />
         ))}
