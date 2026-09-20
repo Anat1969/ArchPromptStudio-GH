@@ -288,6 +288,21 @@ function ImagePage({ project, spread }) {
     <TextBlock sectionTag={sectionTag} imageLabel={imageLabel} captionLines={captionLines} sub={sub} pageIndex={pageIndex} />
   );
 
+  // ── Building exteriors (private house / building): show the FULL image in a
+  //    square frame, proportions preserved (object-contain — no crop, no distortion). ──
+  if (imageType === 'buildingTypes') {
+    return (
+      <div className="w-full h-full bg-[hsl(var(--mag-bg))] flex items-center justify-center gap-12 px-16" dir="rtl">
+        <div className="flex-1 max-w-md flex flex-col gap-5 order-last">
+          {block}
+        </div>
+        <div className="relative h-[80%] aspect-square flex-shrink-0 bg-[hsl(var(--mag-bg-2))] border border-[hsl(var(--mag-hair)/0.12)] flex items-center justify-center overflow-hidden">
+          <img src={imageUrl} alt={imageLabel} className="max-w-full max-h-full w-auto h-auto object-contain" />
+        </div>
+      </div>
+    );
+  }
+
   if (pos === 'bottom') {
     return (
       <div className="w-full h-full relative overflow-hidden bg-[hsl(var(--mag-bg-2))]">
