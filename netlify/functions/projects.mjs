@@ -1,5 +1,8 @@
 // Projects API backed by Netlify Blobs (store: "projects").
-// One blob per project, keyed by id; value is the full DB-shaped record.
+// All projects live in ONE index document (key "all") read with strong
+// consistency, so a create/update/delete is visible immediately on the next
+// read. (Blobs list() is only eventually consistent — unreliable right after a
+// write.) Fine for this low-traffic, single-tenant, no-auth app.
 // Routes (via netlify.toml redirect /api/* -> /.netlify/functions/:splat):
 //   GET    /api/projects          list all (newest first)
 //   POST   /api/projects          create (body = record)
@@ -7,7 +10,18 @@
 //   DELETE /api/projects?id=<id>  delete
 import { getStore } from '@netlify/blobs';
 
-const store = () => getStore('projects');
+const KEY = 'all';
+const store = () => getStore({ name: 'projects', consistency: 'strong' });
+
+async function readAll() {
+  const arr = await store().get(KEY, { type: 'json' });
+  return Array.isArray(arr) ? arr : [];
+}
+async function writeAll(arr) {
+  await store().setJSON(KEY, arr);
+}
+const uuid = () =>
+  globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
 export default async (req) => {
   const url = new URL(req.url);
@@ -15,37 +29,37 @@ export default async (req) => {
 
   try {
     if (req.method === 'GET') {
-      const { blobs } = await store().list();
-      const records = await Promise.all(
-        blobs.map((b) => store().get(b.key, { type: 'json' }))
-      );
-      const clean = records.filter(Boolean);
-      clean.sort((a, b) => new Date(b.updated_date || 0) - new Date(a.updated_date || 0));
-      return Response.json(clean);
+      const all = await readAll();
+      all.sort((a, b) => new Date(b.updated_date || 0) - new Date(a.updated_date || 0));
+      return Response.json(all);
     }
 
     if (req.method === 'POST') {
       const data = await req.json();
       const now = new Date().toISOString();
-      const newId = (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`);
-      const record = { ...data, id: newId, created_date: now, updated_date: now };
-      await store().setJSON(newId, record);
+      const record = { ...data, id: uuid(), created_date: now, updated_date: now };
+      const all = await readAll();
+      all.push(record);
+      await writeAll(all);
       return Response.json(record);
     }
 
     if (req.method === 'PUT') {
       if (!id) return new Response('id required', { status: 400 });
-      const existing = await store().get(id, { type: 'json' });
-      if (!existing) return new Response('not found', { status: 404 });
+      const all = await readAll();
+      const idx = all.findIndex((p) => p.id === id);
+      if (idx === -1) return new Response('not found', { status: 404 });
       const data = await req.json();
-      const record = { ...existing, ...data, id, updated_date: new Date().toISOString() };
-      await store().setJSON(id, record);
+      const record = { ...all[idx], ...data, id, updated_date: new Date().toISOString() };
+      all[idx] = record;
+      await writeAll(all);
       return Response.json(record);
     }
 
     if (req.method === 'DELETE') {
       if (!id) return new Response('id required', { status: 400 });
-      await store().delete(id);
+      const all = await readAll();
+      await writeAll(all.filter((p) => p.id !== id));
       return Response.json({ ok: true });
     }
 

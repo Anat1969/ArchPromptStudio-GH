@@ -8,7 +8,7 @@ export default async (req) => {
   if (!key) return new Response('key required', { status: 400 });
 
   try {
-    const store = getStore('images');
+    const store = getStore({ name: 'images', consistency: 'strong' });
     const blob = await store.get(key, { type: 'arrayBuffer' });
     if (!blob) return new Response('not found', { status: 404 });
 
