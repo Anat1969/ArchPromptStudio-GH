@@ -170,7 +170,11 @@ const COMPOSITION_RULES = 'Composition: rule of thirds, deep spatial layers, nat
 
 export function generatePrompt(type, project) {
   const { visualDescription = {}, styleSynthesis = {}, buildingType = 'private', inspirationImage } = project;
-  const imagePrefix = inspirationImage ? `${inspirationImage} ` : '';
+  // Midjourney needs an absolute image URL as the prompt prefix. Our images are
+  // served from a relative path (/api/images?...), so expand it to a full URL.
+  const toAbsoluteUrl = (u) =>
+    (u && u.startsWith('/') && typeof window !== 'undefined') ? window.location.origin + u : u;
+  const imagePrefix = inspirationImage ? `${toAbsoluteUrl(inspirationImage)} ` : '';
   const synthesis = getSynthesis(styleSynthesis.styleA, styleSynthesis.styleB);
   const mat   = MATERIAL_TOKENS[visualDescription.materials]  || '';
   const pal   = PALETTE_TOKENS[visualDescription.palette]     || '';
