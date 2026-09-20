@@ -11,7 +11,8 @@
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
     "export:base44": "node scripts/export-base44.mjs",
-    "import:netlify": "node scripts/import-to-netlify.mjs"
+    "import:netlify": "node scripts/import-to-netlify.mjs",
+    "fix:prompts": "node scripts/fix-prompt-urls.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.48",
