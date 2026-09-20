@@ -91,36 +91,36 @@ export default function Home() {
                   <div
                     key={p.id}
                     onClick={() => navigate(`/work/${p.id}`)}
-                    className="relative overflow-hidden rounded-sm border border-border hover:border-gold cursor-pointer transition-all duration-200 group h-44"
+                    className="relative overflow-hidden rounded-sm border border-border hover:border-gold cursor-pointer transition-colors duration-200 group h-56"
                   >
-                    {/* Background — inspiration image */}
+                    {/* Background — inspiration image, undistorted (object-cover), left brighter */}
                     {p.inspirationImage ? (
-                      <img src={p.inspirationImage} alt="" className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105" />
+                      <img src={p.inspirationImage} alt="" className="absolute inset-0 w-full h-full object-cover object-center" />
                     ) : (
                       <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] to-[#0e0e0e]" />
                     )}
-                    {/* Gradient — transparent but visible, strongest on the text (right, RTL) side */}
-                    <div className="absolute inset-0 bg-gradient-to-l from-black/85 via-black/55 to-black/20" />
+                    {/* Gradient — lighter now: readable at top & bottom, image clear in the middle */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-black/55" />
 
                     {/* Content */}
-                    <div className="relative h-full flex items-center justify-between gap-4 px-6 py-4">
-                      {/* Text block (right in RTL) */}
-                      <div className="flex items-start gap-4 flex-1 min-w-0">
-                        <div className="font-mono text-lg font-bold text-gold min-w-12">#{String(p.number).padStart(2, '0')}</div>
+                    <div className="relative h-full flex flex-col justify-between p-5">
+                      {/* Text (top) */}
+                      <div className="flex items-start gap-4 min-w-0">
+                        <div className="font-mono text-lg font-bold text-gold min-w-12 [text-shadow:0_2px_8px_rgba(0,0,0,0.8)]">#{String(p.number).padStart(2, '0')}</div>
                         <div className="min-w-0">
-                          <p className="font-display text-2xl font-light text-white group-hover:text-gold transition-colors truncate">{displayName}</p>
+                          <p className="font-display text-2xl font-light text-white group-hover:text-gold transition-colors truncate [text-shadow:0_2px_10px_rgba(0,0,0,0.85)]">{displayName}</p>
                           {p.poeticDescription && (
-                            <p className="font-mono text-xs text-white/70 mt-1.5 leading-relaxed italic line-clamp-2 max-w-xl" dir="rtl">{p.poeticDescription}</p>
+                            <p className="font-mono text-xs text-white/80 mt-1.5 leading-relaxed italic line-clamp-2 max-w-xl [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]" dir="rtl">{p.poeticDescription}</p>
                           )}
-                          <p className="font-mono text-xs text-white/45 mt-1.5">{formatDate(p.updatedAt)}</p>
+                          <p className="font-mono text-xs text-white/55 mt-1.5 [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">{formatDate(p.updatedAt)}</p>
                         </div>
                       </div>
 
-                      {/* Room thumbnails (left in RTL) */}
+                      {/* Room thumbnails — a strip across the width of the frame */}
                       {thumbs.length > 0 && (
-                        <div className="hidden sm:flex gap-1.5 flex-shrink-0">
+                        <div className="flex justify-between gap-2">
                           {thumbs.map((url, i) => (
-                            <div key={i} className="w-16 h-16 rounded-sm overflow-hidden border border-white/25 shadow-md">
+                            <div key={i} className="flex-1 max-w-[7.5rem] aspect-square rounded-sm overflow-hidden border border-white/40 shadow-lg">
                               <img src={url} alt="" className="w-full h-full object-cover object-center" />
                             </div>
                           ))}
@@ -131,7 +131,7 @@ export default function Home() {
                     {/* Delete */}
                     <button
                       onClick={(e) => handleDelete(e, p.id)}
-                      className="absolute top-2 left-2 z-10 font-mono text-sm text-white/50 hover:text-destructive bg-black/30 hover:bg-black/50 rounded-full w-6 h-6 flex items-center justify-center transition-colors"
+                      className="absolute top-2 left-2 z-10 font-mono text-sm text-white/60 hover:text-destructive bg-black/40 hover:bg-black/60 rounded-full w-6 h-6 flex items-center justify-center transition-colors"
                       title="מחק פרויקט"
                     >
                       ×

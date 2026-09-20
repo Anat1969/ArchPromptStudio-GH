@@ -231,118 +231,87 @@ function CoverPage({ project }) {
 
 // ─── Image Page ───────────────────────────────────────────────────────────────
 
+// Break a caption into one line per sentence (a full line up to the period).
+function toLines(text) {
+  if (!text) return [];
+  return text.split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean);
+}
+
+// Shared typography — identical sizes on every page; hierarchy within the page.
+// A scrim-colored text-shadow gives sharp contrast over a mostly-clear image.
+const SHADOW = '[text-shadow:0_2px_14px_hsl(var(--mag-scrim)/0.95)]';
+const T = {
+  tag: 'font-mono text-sm uppercase tracking-widest text-gold',
+  h:   `font-display text-5xl font-light leading-tight text-[hsl(var(--mag-fg))] ${SHADOW}`,
+  cap: `font-display text-2xl font-light italic leading-relaxed text-[hsl(var(--mag-fg))] ${SHADOW}`,
+  sub: `font-display text-lg font-light italic leading-snug text-[hsl(var(--mag-fg)/0.85)] ${SHADOW}`,
+  num: `font-mono text-sm text-[hsl(var(--mag-fg)/0.6)] ${SHADOW}`,
+};
+
+function TextBlock({ sectionTag, imageLabel, captionLines, sub, pageIndex }) {
+  return (
+    <>
+      <div className="flex items-center gap-3">
+        <div className="w-6 h-px bg-gold" />
+        <span className={T.tag}>{sectionTag}</span>
+      </div>
+      <h2 className={T.h}>{imageLabel}</h2>
+      {captionLines.length > 0 && (
+        <div className="flex flex-col gap-2">
+          {captionLines.map((line, i) => <p key={i} className={T.cap}>{line}</p>)}
+        </div>
+      )}
+      {sub && <p className={T.sub} dir="ltr">&quot;{sub}&quot;</p>}
+      <span className={T.num}>{String(pageIndex + 2).padStart(2, '0')}</span>
+    </>
+  );
+}
+
 function ImagePage({ project, spread }) {
   const { imageUrl, imageLabel, imageKey, imageType, pageIndex } = spread;
-  const synthesis   = getSynthesis(project.styleSynthesis?.styleA, project.styleSynthesis?.styleB);
-  const displayName = getDisplayName(project);
-  const caption     = getCaption(imageType, imageKey, project);
-  const layout      = getLayout(pageIndex);
+  const synthesis = getSynthesis(project.styleSynthesis?.styleA, project.styleSynthesis?.styleB);
+  const caption   = getCaption(imageType, imageKey, project);
+  const captionLines = toLines(caption);
+  const layout    = getLayout(pageIndex);
+  const sub       = synthesis?.tension || synthesis?.token || '';
 
   const sectionTag = imageType === 'boards' ? 'שפה עיצובית'
                    : imageType === 'rooms'   ? 'מרחב פנים'
                    : 'חזית מבנה';
 
-  // ── Layout A: Full-bleed image, text block at bottom ──
-  if (layout === 'hero-text-bottom') {
+  // Text position per layout (consistent language: image + light gradient + text).
+  const pos = layout === 'text-left-image-right' ? 'right'
+            : layout === 'image-left-text-right' ? 'left'
+            : 'bottom';
+
+  const block = (
+    <TextBlock sectionTag={sectionTag} imageLabel={imageLabel} captionLines={captionLines} sub={sub} pageIndex={pageIndex} />
+  );
+
+  if (pos === 'bottom') {
     return (
       <div className="w-full h-full relative overflow-hidden bg-[hsl(var(--mag-bg-2))]">
         <img src={imageUrl} alt={imageLabel} className="w-full h-full object-cover object-center" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--mag-scrim)/0.95)] via-[hsl(var(--mag-scrim)/0.4)] to-transparent" />
-        <div className="absolute top-10 right-10 flex items-center gap-3">
-          <div className="w-5 h-px bg-gold" />
-          <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.5)] uppercase tracking-widest">{sectionTag}</span>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 px-14 py-12">
-          <p className="font-mono text-sm text-gold/80 uppercase tracking-widest mb-4">{imageLabel}</p>
-          <h2 className="font-display text-5xl font-light text-[hsl(var(--mag-fg))] leading-tight mb-6">{displayName}</h2>
-          {caption && (
-            <p className="font-display text-3xl text-[hsl(var(--mag-fg)/0.8)] leading-relaxed max-w-2xl font-light italic">״{caption}״</p>
-          )}
-          {synthesis && (
-            <p className="font-display text-xl text-[hsl(var(--mag-fg)/0.35)] mt-6 leading-relaxed italic font-light" dir="ltr">"{synthesis.token}"</p>
-          )}
-        </div>
-        <div className="absolute bottom-12 left-14">
-          <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.15)]">{String(pageIndex + 2).padStart(2, '0')}</span>
+        {/* light gradient — image stays sharp, only the text band darkens */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--mag-scrim)/0.88)] via-[hsl(var(--mag-scrim)/0.12)] to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 px-16 py-12 max-h-[72%] flex flex-col gap-5 overflow-y-auto">
+          {block}
         </div>
       </div>
     );
   }
 
-  // ── Layout B: Full-bleed image, text overlay on the right ──
-  if (layout === 'text-left-image-right') {
-    return (
-      <div className="w-full h-full relative overflow-hidden bg-[hsl(var(--mag-bg-2))]">
-        <img src={imageUrl} alt={imageLabel} className="w-full h-full object-cover object-center" />
-        <div className="absolute inset-0 bg-gradient-to-l from-[hsl(var(--mag-scrim)/0.92)] via-[hsl(var(--mag-scrim)/0.45)] to-transparent" />
-        <div className="absolute top-0 right-0 bottom-0 w-[46%] flex flex-col justify-center px-14 gap-6 overflow-y-auto">
-          <div className="flex items-center gap-3">
-            <div className="w-5 h-px bg-gold" />
-            <span className="font-mono text-sm text-gold/80 uppercase tracking-widest">{sectionTag}</span>
-          </div>
-          <h2 className="font-display text-6xl font-light text-[hsl(var(--mag-fg))] leading-tight">{imageLabel}</h2>
-          {caption && (
-            <p className="font-display text-2xl text-[hsl(var(--mag-fg)/0.85)] leading-relaxed font-light italic">״{caption}״</p>
-          )}
-          {synthesis && (
-            <div className="border-r-2 border-gold/40 pr-5 mt-1">
-              <p className="font-display text-xl text-[hsl(var(--mag-fg)/0.6)] italic font-light leading-snug">"{synthesis.tension}"</p>
-            </div>
-          )}
-          <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.35)] mt-2">{String(pageIndex + 2).padStart(2, '0')}</span>
-        </div>
-      </div>
-    );
-  }
+  const sideClass = pos === 'right' ? 'right-0' : 'left-0';
+  const grad = pos === 'right'
+    ? 'bg-gradient-to-l from-[hsl(var(--mag-scrim)/0.9)] via-[hsl(var(--mag-scrim)/0.18)] to-transparent'
+    : 'bg-gradient-to-r from-[hsl(var(--mag-scrim)/0.9)] via-[hsl(var(--mag-scrim)/0.18)] to-transparent';
 
-  // ── Layout C: Full-bleed image, text overlay on the left ──
-  if (layout === 'image-left-text-right') {
-    return (
-      <div className="w-full h-full relative overflow-hidden bg-[hsl(var(--mag-bg-2))]">
-        <img src={imageUrl} alt={imageLabel} className="w-full h-full object-cover object-center" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--mag-scrim)/0.92)] via-[hsl(var(--mag-scrim)/0.45)] to-transparent" />
-        <div className="absolute top-0 left-0 bottom-0 w-[46%] flex flex-col justify-center px-14 gap-6 overflow-y-auto">
-          <div className="flex items-center gap-3">
-            <div className="w-5 h-px bg-gold" />
-            <span className="font-mono text-sm text-gold/80 uppercase tracking-widest">{sectionTag}</span>
-          </div>
-          <h2 className="font-display text-5xl font-light text-[hsl(var(--mag-fg))] leading-tight">{imageLabel}</h2>
-          {caption && (
-            <p className="font-display text-2xl text-[hsl(var(--mag-fg)/0.85)] leading-relaxed font-light italic">״{caption}״</p>
-          )}
-          {synthesis && (
-            <div className="border-r border-gold/40 pr-5 mt-1">
-              <p className="font-display text-lg text-[hsl(var(--mag-fg)/0.6)] leading-relaxed italic font-light" dir="ltr">"{synthesis.material}"</p>
-            </div>
-          )}
-          <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.3)] mt-2">{String(pageIndex + 2).padStart(2, '0')}</span>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Layout D: Full-bleed + side caption strip ──
   return (
     <div className="w-full h-full relative overflow-hidden bg-[hsl(var(--mag-bg-2))]">
       <img src={imageUrl} alt={imageLabel} className="w-full h-full object-cover object-center" />
-      <div className="absolute inset-0 bg-gradient-to-l from-[hsl(var(--mag-scrim)/0.9)] via-[hsl(var(--mag-scrim)/0.3)] to-transparent" />
-      <div className="absolute top-0 left-0 bottom-0 w-[40%] flex flex-col justify-center px-12 gap-7 overflow-y-auto">
-        <div className="flex items-center gap-3">
-          <div className="w-5 h-px bg-gold" />
-          <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.5)] uppercase tracking-widest">{sectionTag}</span>
-        </div>
-        <h2 className="font-display text-5xl font-light text-[hsl(var(--mag-fg))] leading-tight">{imageLabel}</h2>
-        {caption && (
-          <p className="font-display text-2xl text-[hsl(var(--mag-fg)/0.8)] leading-relaxed font-light italic">״{caption}״</p>
-        )}
-        {synthesis && (
-          <div className="border-r border-gold/30 pr-5 mt-2">
-            <p className="font-display text-xl text-[hsl(var(--mag-fg)/0.55)] italic font-light leading-snug">
-              "{synthesis.token}"
-            </p>
-          </div>
-        )}
-        <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.2)] mt-4">{String(pageIndex + 2).padStart(2, '0')}</span>
+      <div className={`absolute inset-0 ${grad}`} />
+      <div className={`absolute top-0 ${sideClass} bottom-0 w-[46%] px-14 flex flex-col justify-center gap-5 overflow-y-auto`}>
+        {block}
       </div>
     </div>
   );

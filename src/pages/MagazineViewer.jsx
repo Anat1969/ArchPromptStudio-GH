@@ -116,8 +116,8 @@ export default function MagazineViewer() {
 
   useEffect(() => {
     const handleKey = (e) => {
-      if (e.key === 'ArrowLeft')  goNext();
-      if (e.key === 'ArrowRight') goPrev();
+      if (e.key === 'ArrowRight') goNext();
+      if (e.key === 'ArrowLeft')  goPrev();
       if (e.key === 'Escape')     navigate('/gallery');
     };
     window.addEventListener('keydown', handleKey);
@@ -171,30 +171,32 @@ export default function MagazineViewer() {
         </div>
       </div>
 
-      {/* Page content */}
+      {/* Page content — click the RIGHT half to go forward, the LEFT half to go back */}
       <div className="flex-1 overflow-hidden relative">
         <MagazineSpread spread={currentPage} project={project} />
 
-        {/* Prev arrow */}
-        {canPrev && (
+        {/* Right half → forward (next) */}
+        {canNext && (
           <button
-            onClick={goPrev}
-            className="absolute right-0 top-0 h-full w-16 flex items-center justify-center group z-10 hover:bg-[hsl(var(--mag-hair)/0.05)] transition-colors"
+            onClick={goNext}
+            aria-label="הדף הבא"
+            className="absolute right-0 top-0 h-full w-1/2 flex items-center justify-center group z-10"
           >
-            <div className="w-8 h-8 rounded-full border border-[hsl(var(--mag-hair)/0.1)] group-hover:border-[hsl(var(--mag-hair)/0.3)] flex items-center justify-center transition-all">
-              <span className="text-[hsl(var(--mag-fg)/0.3)] group-hover:text-[hsl(var(--mag-fg)/0.8)] text-lg leading-none">›</span>
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity w-10 h-10 rounded-full border border-[hsl(var(--mag-hair)/0.2)] bg-[hsl(var(--mag-scrim)/0.35)] flex items-center justify-center">
+              <span className="text-[hsl(var(--mag-fg)/0.8)] text-xl leading-none">›</span>
             </div>
           </button>
         )}
 
-        {/* Next arrow */}
-        {canNext && (
+        {/* Left half → back (previous) */}
+        {canPrev && (
           <button
-            onClick={goNext}
-            className="absolute left-0 top-0 h-full w-16 flex items-center justify-center group z-10 hover:bg-[hsl(var(--mag-hair)/0.05)] transition-colors"
+            onClick={goPrev}
+            aria-label="הדף הקודם"
+            className="absolute left-0 top-0 h-full w-1/2 flex items-center justify-center group z-10"
           >
-            <div className="w-8 h-8 rounded-full border border-[hsl(var(--mag-hair)/0.1)] group-hover:border-[hsl(var(--mag-hair)/0.3)] flex items-center justify-center transition-all">
-              <span className="text-[hsl(var(--mag-fg)/0.3)] group-hover:text-[hsl(var(--mag-fg)/0.8)] text-lg leading-none">‹</span>
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity w-10 h-10 rounded-full border border-[hsl(var(--mag-hair)/0.2)] bg-[hsl(var(--mag-scrim)/0.35)] flex items-center justify-center">
+              <span className="text-[hsl(var(--mag-fg)/0.8)] text-xl leading-none">‹</span>
             </div>
           </button>
         )}
