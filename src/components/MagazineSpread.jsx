@@ -126,17 +126,37 @@ function buildCaption(imageType, imageKey, project, synthesis) {
   return '';
 }
 
-function getCaption(imageType, imageKey, project) {
-  const synthesis = getSynthesis(project.styleSynthesis?.styleA, project.styleSynthesis?.styleB);
-  return buildCaption(imageType, imageKey, project, synthesis);
+// Opening sentence that ties the project's inspiration (context) to the concept
+// of this specific board / room / plan.
+function buildContextLine(imageType, imageKey, project) {
+  const name = getDisplayName(project);
+  const ctx = (name && !/^פרויקט #/.test(name)) ? name : '';
+  if (!ctx) return '';
+  const map = {
+    boards: {
+      materials: `${ctx} — נקודת המוצא — מתורגמת כאן לשפה חומרית: מרקם, משקל ומגע שמחזירים את הרעיון אל הגוף.`,
+      colors:   `${ctx} מכתיבה את הפלטה: הצבע כאן אינו קישוט אלא זיכרון של המקום שממנו הכול התחיל.`,
+      mood:     `${ctx} היא האווירה שקדמה לתכנון — הלוח מנסה לתפוס אותה לפני שהפכה לקירות.`,
+    },
+    rooms: {
+      living:   `${ctx} נכנסת אל הסלון — המקום שבו ההשראה פוגשת את חיי היומיום.`,
+      kitchen:  `${ctx} עוברת דרך המטבח — שם הרעיון נבחן מול השגרה.`,
+      bedroom:  `${ctx} מתכנסת אל חדר השינה — ההשראה בגרסתה השקטה והפרטית.`,
+      bathroom: `${ctx} מזוקקת בחדר הרחצה — המקום שבו ההשראה נוגעת ישירות בגוף.`,
+    },
+    buildingTypes: {
+      private:  `${ctx} מקבלת חזית — הבית הפרטי הוא ההשראה שהפכה לגבול בין פנים לחוץ.`,
+      building: `${ctx} עולה לקנה מידה עירוני — כיצד השראה אישית הופכת לאמירה ציבורית.`,
+    },
+  };
+  return map[imageType]?.[imageKey] || '';
 }
 
-// ─── Layout variants ──────────────────────────────────────────────────────────
-
-const LAYOUTS = ['hero-text-bottom', 'text-left-image-right', 'image-left-text-right', 'fullbleed-caption'];
-
-function getLayout(index) {
-  return LAYOUTS[index % LAYOUTS.length];
+function getCaption(imageType, imageKey, project) {
+  const synthesis = getSynthesis(project.styleSynthesis?.styleA, project.styleSynthesis?.styleB);
+  const base = buildCaption(imageType, imageKey, project, synthesis);
+  const ctxLine = buildContextLine(imageType, imageKey, project);
+  return [ctxLine, base].filter(Boolean).join(' ');
 }
 
 // ─── Fade transition ──────────────────────────────────────────────────────────
@@ -272,62 +292,31 @@ function ImagePage({ project, spread }) {
   const synthesis = getSynthesis(project.styleSynthesis?.styleA, project.styleSynthesis?.styleB);
   const caption   = getCaption(imageType, imageKey, project);
   const captionLines = toLines(caption);
-  const layout    = getLayout(pageIndex);
   const sub       = synthesis?.tension || synthesis?.token || '';
 
   const sectionTag = imageType === 'boards' ? 'שפה עיצובית'
                    : imageType === 'rooms'   ? 'מרחב פנים'
                    : 'חזית מבנה';
 
-  // Text position per layout (consistent language: image + light gradient + text).
-  const pos = layout === 'text-left-image-right' ? 'right'
-            : layout === 'image-left-text-right' ? 'left'
-            : 'bottom';
+  // One consistent language for every page: the image in a SQUARE frame with
+  // object-contain (full image, proportions preserved — never cropped or warped),
+  // and the interpretive caption beside it. Side alternates for rhythm.
+  const imageRight = pageIndex % 2 === 0;
 
-  const block = (
-    <TextBlock sectionTag={sectionTag} imageLabel={imageLabel} captionLines={captionLines} sub={sub} pageIndex={pageIndex} />
+  const plate = (
+    <div className="relative h-[82%] aspect-square flex-shrink-0 bg-[hsl(var(--mag-bg-2))] border border-[hsl(var(--mag-hair)/0.12)] flex items-center justify-center overflow-hidden">
+      <img src={imageUrl} alt={imageLabel} className="max-w-full max-h-full w-auto h-auto object-contain" />
+    </div>
+  );
+  const text = (
+    <div className="flex-1 max-w-md flex flex-col gap-5">
+      <TextBlock sectionTag={sectionTag} imageLabel={imageLabel} captionLines={captionLines} sub={sub} pageIndex={pageIndex} />
+    </div>
   );
 
-  // ── Building exteriors (private house / building): show the FULL image in a
-  //    square frame, proportions preserved (object-contain — no crop, no distortion). ──
-  if (imageType === 'buildingTypes') {
-    return (
-      <div className="w-full h-full bg-[hsl(var(--mag-bg))] flex items-center justify-center gap-12 px-16" dir="rtl">
-        <div className="flex-1 max-w-md flex flex-col gap-5 order-last">
-          {block}
-        </div>
-        <div className="relative h-[80%] aspect-square flex-shrink-0 bg-[hsl(var(--mag-bg-2))] border border-[hsl(var(--mag-hair)/0.12)] flex items-center justify-center overflow-hidden">
-          <img src={imageUrl} alt={imageLabel} className="max-w-full max-h-full w-auto h-auto object-contain" />
-        </div>
-      </div>
-    );
-  }
-
-  if (pos === 'bottom') {
-    return (
-      <div className="w-full h-full relative overflow-hidden bg-[hsl(var(--mag-bg-2))]">
-        <img src={imageUrl} alt={imageLabel} className="w-full h-full object-cover object-center" />
-        {/* light gradient — image stays sharp, only the text band darkens */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--mag-scrim)/0.88)] via-[hsl(var(--mag-scrim)/0.12)] to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 px-16 py-12 max-h-[72%] flex flex-col gap-5 overflow-y-auto">
-          {block}
-        </div>
-      </div>
-    );
-  }
-
-  const sideClass = pos === 'right' ? 'right-0' : 'left-0';
-  const grad = pos === 'right'
-    ? 'bg-gradient-to-l from-[hsl(var(--mag-scrim)/0.9)] via-[hsl(var(--mag-scrim)/0.18)] to-transparent'
-    : 'bg-gradient-to-r from-[hsl(var(--mag-scrim)/0.9)] via-[hsl(var(--mag-scrim)/0.18)] to-transparent';
-
   return (
-    <div className="w-full h-full relative overflow-hidden bg-[hsl(var(--mag-bg-2))]">
-      <img src={imageUrl} alt={imageLabel} className="w-full h-full object-cover object-center" />
-      <div className={`absolute inset-0 ${grad}`} />
-      <div className={`absolute top-0 ${sideClass} bottom-0 w-[46%] px-14 flex flex-col justify-center gap-5 overflow-y-auto`}>
-        {block}
-      </div>
+    <div className="w-full h-full bg-[hsl(var(--mag-bg))] flex items-center justify-center gap-12 px-16" dir="rtl">
+      {imageRight ? <>{plate}{text}</> : <>{text}{plate}</>}
     </div>
   );
 }
