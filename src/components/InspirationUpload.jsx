@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { uploadImage } from '@/api/projectsClient';
 
 export default function InspirationUpload({ image, onChange }) {
   const inputRef = useRef(null);
@@ -8,7 +8,7 @@ export default function InspirationUpload({ image, onChange }) {
   async function uploadFile(file) {
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await uploadImage(file);
       onChange(file_url);
     } finally {
       setUploading(false);

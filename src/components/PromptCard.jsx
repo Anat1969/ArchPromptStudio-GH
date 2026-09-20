@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { base44 } from '@/api/base44Client';
+import { uploadImage } from '@/api/projectsClient';
 import { generatePrompt } from '../lib/promptEngine';
 
 
@@ -41,7 +41,7 @@ export default function PromptCard({ type, title, project, onUpdate, isBuildingT
   async function handleImageChange(file) {
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await uploadImage(file);
       const updated = { ...cardData, resultImage: file_url, status: 'filled' };
       onUpdate(section, updated);
     } finally {

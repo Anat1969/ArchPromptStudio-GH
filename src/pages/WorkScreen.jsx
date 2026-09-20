@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { loadProjects, saveProject, getProjectName } from '../lib/storage';
-import { STYLES_LIST, generatePrompt, getSynthesis } from '../lib/promptEngine';
+import { STYLES_LIST, getSynthesis } from '../lib/promptEngine';
 import InspirationUpload from '../components/InspirationUpload';
 import VisualChips from '../components/VisualChips';
 import PromptCard from '../components/PromptCard';

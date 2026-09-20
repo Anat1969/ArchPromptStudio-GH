@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { useState } from 'react';
+import { projectsClient } from '@/api/projectsClient';
 import { generatePoeticDescription } from '../lib/promptEngine';
 
 // All possible localStorage keys used across versions
@@ -57,7 +57,7 @@ export default function MigrateLocalStorage({ onDone }) {
       const data = toDB(p);
       // Ensure number is set
       if (!data.number) data.number = i + 1;
-      await base44.entities.Project.create(data);
+      await projectsClient.create(data);
     }
 
     localStorage.setItem(MIGRATED_FLAG, '1');

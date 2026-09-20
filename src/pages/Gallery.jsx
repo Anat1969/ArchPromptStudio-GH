@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loadProjects, getProjectName } from '../lib/storage';
+import { loadProjects } from '../lib/storage';
 import { getSynthesis, STYLES_LIST } from '../lib/promptEngine';
 import { motion } from 'framer-motion';
 import MigrateLocalStorage, { hasPendingMigration } from '../components/MigrateLocalStorage';

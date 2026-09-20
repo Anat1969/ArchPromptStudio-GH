@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { projectsClient } from '@/api/projectsClient';
 import { STYLES_LIST, generatePoeticDescription } from './promptEngine';
 
 // ─── Normalize: DB record → internal project shape ────────────────────────────
@@ -37,7 +37,7 @@ function toDB(project) {
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export async function loadProjects() {
-  const records = await base44.entities.Project.list('-updated_date', 100);
+  const records = await projectsClient.list('-updated_date', 100);
   return records.map(fromDB);
 }
 
@@ -45,18 +45,18 @@ export async function saveProject(project) {
   const data = toDB(project);
   if (project._isNew) {
     // Assign sequential number based on existing count
-    const existing = await base44.entities.Project.list('-updated_date', 100);
+    const existing = await projectsClient.list('-updated_date', 100);
     data.number = existing.length + 1;
-    const created = await base44.entities.Project.create(data);
+    const created = await projectsClient.create(data);
     return fromDB(created);
   } else {
-    const updated = await base44.entities.Project.update(project.id, data);
+    const updated = await projectsClient.update(project.id, data);
     return fromDB(updated);
   }
 }
 
 export async function deleteProject(id) {
-  await base44.entities.Project.delete(id);
+  await projectsClient.delete(id);
 }
 
 export function createProject(name) {
