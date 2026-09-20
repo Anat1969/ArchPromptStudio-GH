@@ -269,68 +269,53 @@ function ImagePage({ project, spread }) {
     );
   }
 
-  // ── Layout B: Text left, image right ──
+  // ── Layout B: Full-bleed image, text overlay on the right ──
   if (layout === 'text-left-image-right') {
     return (
-      <div className="w-full h-full flex bg-[hsl(var(--mag-bg))]">
-        <div className="w-[45%] flex-shrink-0 flex flex-col justify-between px-12 py-16 border-l border-[hsl(var(--mag-hair)/0.12)] overflow-y-auto">
-          <div>
-            <div className="flex items-center gap-3 mb-10">
-              <div className="w-5 h-px bg-gold" />
-              <span className="font-mono text-sm text-gold/70 uppercase tracking-widest">{sectionTag}</span>
+      <div className="w-full h-full relative overflow-hidden bg-[hsl(var(--mag-bg-2))]">
+        <img src={imageUrl} alt={imageLabel} className="w-full h-full object-cover object-center" />
+        <div className="absolute inset-0 bg-gradient-to-l from-[hsl(var(--mag-scrim)/0.92)] via-[hsl(var(--mag-scrim)/0.45)] to-transparent" />
+        <div className="absolute top-0 right-0 bottom-0 w-[46%] flex flex-col justify-center px-14 gap-6 overflow-y-auto">
+          <div className="flex items-center gap-3">
+            <div className="w-5 h-px bg-gold" />
+            <span className="font-mono text-sm text-gold/80 uppercase tracking-widest">{sectionTag}</span>
+          </div>
+          <h2 className="font-display text-6xl font-light text-[hsl(var(--mag-fg))] leading-tight">{imageLabel}</h2>
+          {caption && (
+            <p className="font-display text-2xl text-[hsl(var(--mag-fg)/0.85)] leading-relaxed font-light italic">״{caption}״</p>
+          )}
+          {synthesis && (
+            <div className="border-r-2 border-gold/40 pr-5 mt-1">
+              <p className="font-display text-xl text-[hsl(var(--mag-fg)/0.6)] italic font-light leading-snug">"{synthesis.tension}"</p>
             </div>
-            <h2 className="font-display text-6xl font-light text-[hsl(var(--mag-fg))] leading-tight mb-6">{imageLabel}</h2>
-            <div className="w-8 h-px bg-[hsl(var(--mag-hair)/0.15)] mb-8" />
-            {caption && (
-              <p className="font-display text-2xl text-[hsl(var(--mag-fg)/0.8)] leading-relaxed font-light italic">״{caption}״</p>
-            )}
-          </div>
-          <div>
-            {synthesis && (
-              <div className="border-r-2 border-gold/30 pr-5 mb-6">
-                <p className="font-display text-2xl text-[hsl(var(--mag-fg)/0.7)] italic font-light leading-snug">
-                  "{synthesis.tension}"
-                </p>
-              </div>
-            )}
-            <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.3)]">{String(pageIndex + 2).padStart(2, '0')}</span>
-          </div>
-        </div>
-        {/* Image — natural proportions via object-cover, no distortion */}
-        <div className="flex-1 relative overflow-hidden bg-[hsl(var(--mag-bg-2))]">
-          <img src={imageUrl} alt={imageLabel} className="w-full h-full object-cover object-center" />
+          )}
+          <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.35)] mt-2">{String(pageIndex + 2).padStart(2, '0')}</span>
         </div>
       </div>
     );
   }
 
-  // ── Layout C: Image left, text right ──
+  // ── Layout C: Full-bleed image, text overlay on the left ──
   if (layout === 'image-left-text-right') {
     return (
-      <div className="w-full h-full flex bg-[hsl(var(--mag-bg))]">
-        {/* Image — natural proportions */}
-        <div className="w-[55%] flex-shrink-0 relative overflow-hidden bg-[hsl(var(--mag-bg-2))]">
-          <img src={imageUrl} alt={imageLabel} className="w-full h-full object-cover object-center" />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[hsl(var(--mag-scrim)/0.15)]" />
-        </div>
-        <div className="flex-1 flex flex-col justify-between px-12 py-16 border-r border-[hsl(var(--mag-hair)/0.12)] overflow-y-auto">
-          <div>
-            <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.4)] uppercase tracking-widest block mb-2">{sectionTag}</span>
-            <div className="w-full h-px bg-[hsl(var(--mag-hair)/0.15)] mb-8" />
-            <h2 className="font-display text-5xl font-light text-[hsl(var(--mag-fg))] leading-tight mb-6">{imageLabel}</h2>
-            {caption && (
-              <p className="font-display text-2xl text-[hsl(var(--mag-fg)/0.8)] leading-relaxed font-light italic">״{caption}״</p>
-            )}
+      <div className="w-full h-full relative overflow-hidden bg-[hsl(var(--mag-bg-2))]">
+        <img src={imageUrl} alt={imageLabel} className="w-full h-full object-cover object-center" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--mag-scrim)/0.92)] via-[hsl(var(--mag-scrim)/0.45)] to-transparent" />
+        <div className="absolute top-0 left-0 bottom-0 w-[46%] flex flex-col justify-center px-14 gap-6 overflow-y-auto">
+          <div className="flex items-center gap-3">
+            <div className="w-5 h-px bg-gold" />
+            <span className="font-mono text-sm text-gold/80 uppercase tracking-widest">{sectionTag}</span>
           </div>
-          <div className="flex flex-col gap-4">
-            {synthesis && (
-              <>
-                <div className="w-full h-px bg-[hsl(var(--mag-hair)/0.15)]" />
-                <p className="font-display text-lg text-[hsl(var(--mag-fg)/0.6)] leading-relaxed italic font-light" dir="ltr">"{synthesis.material}"</p>
-              </>
-            )}
-            <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.25)]">{String(pageIndex + 2).padStart(2, '0')}</span>
-          </div>
+          <h2 className="font-display text-5xl font-light text-[hsl(var(--mag-fg))] leading-tight">{imageLabel}</h2>
+          {caption && (
+            <p className="font-display text-2xl text-[hsl(var(--mag-fg)/0.85)] leading-relaxed font-light italic">״{caption}״</p>
+          )}
+          {synthesis && (
+            <div className="border-r border-gold/40 pr-5 mt-1">
+              <p className="font-display text-lg text-[hsl(var(--mag-fg)/0.6)] leading-relaxed italic font-light" dir="ltr">"{synthesis.material}"</p>
+            </div>
+          )}
+          <span className="font-mono text-sm text-[hsl(var(--mag-fg)/0.3)] mt-2">{String(pageIndex + 2).padStart(2, '0')}</span>
         </div>
       </div>
     );

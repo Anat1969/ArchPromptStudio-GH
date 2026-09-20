@@ -81,28 +81,58 @@ export default function Home() {
         ) : (
           <>
             <h2 className="font-display text-2xl font-light text-muted-foreground mb-6 tracking-wide">פרויקטים</h2>
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 gap-4">
               {projects.map(p => {
-                const displayName = getProjectName(p);
+                const displayName = getProjectName(p) || `פרויקט #${p.number}`;
+                const resultThumbs = (obj) => Object.values(obj || {}).filter(v => v?.resultImage).map(v => v.resultImage);
+                const roomThumbs = resultThumbs(p.rooms);
+                const thumbs = (roomThumbs.length ? roomThumbs : [...resultThumbs(p.boards), ...resultThumbs(p.buildingTypes)]).slice(0, 4);
                 return (
                   <div
                     key={p.id}
                     onClick={() => navigate(`/work/${p.id}`)}
-                    className="border border-border bg-card hover:border-gold cursor-pointer transition-all duration-200 group p-4 flex items-center justify-between"
+                    className="relative overflow-hidden rounded-sm border border-border hover:border-gold cursor-pointer transition-all duration-200 group h-44"
                   >
-                    <div className="flex items-start gap-4 flex-1">
-                      <div className="font-mono text-lg font-bold text-gold min-w-12">#{String(p.number).padStart(2, '0')}</div>
-                      <div className="flex-1">
-                        <p className="font-display text-lg font-light text-foreground group-hover:text-gold transition-colors">{displayName}</p>
-                        {p.poeticDescription && (
-                          <p className="font-mono text-xs text-muted-foreground/70 mt-1.5 leading-relaxed italic" dir="rtl">{p.poeticDescription}</p>
-                        )}
-                        <p className="font-mono text-xs text-muted-foreground/40 mt-1">{formatDate(p.updatedAt)}</p>
+                    {/* Background — inspiration image */}
+                    {p.inspirationImage ? (
+                      <img src={p.inspirationImage} alt="" className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105" />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] to-[#0e0e0e]" />
+                    )}
+                    {/* Gradient — transparent but visible, strongest on the text (right, RTL) side */}
+                    <div className="absolute inset-0 bg-gradient-to-l from-black/85 via-black/55 to-black/20" />
+
+                    {/* Content */}
+                    <div className="relative h-full flex items-center justify-between gap-4 px-6 py-4">
+                      {/* Text block (right in RTL) */}
+                      <div className="flex items-start gap-4 flex-1 min-w-0">
+                        <div className="font-mono text-lg font-bold text-gold min-w-12">#{String(p.number).padStart(2, '0')}</div>
+                        <div className="min-w-0">
+                          <p className="font-display text-2xl font-light text-white group-hover:text-gold transition-colors truncate">{displayName}</p>
+                          {p.poeticDescription && (
+                            <p className="font-mono text-xs text-white/70 mt-1.5 leading-relaxed italic line-clamp-2 max-w-xl" dir="rtl">{p.poeticDescription}</p>
+                          )}
+                          <p className="font-mono text-xs text-white/45 mt-1.5">{formatDate(p.updatedAt)}</p>
+                        </div>
                       </div>
+
+                      {/* Room thumbnails (left in RTL) */}
+                      {thumbs.length > 0 && (
+                        <div className="hidden sm:flex gap-1.5 flex-shrink-0">
+                          {thumbs.map((url, i) => (
+                            <div key={i} className="w-16 h-16 rounded-sm overflow-hidden border border-white/25 shadow-md">
+                              <img src={url} alt="" className="w-full h-full object-cover object-center" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
+
+                    {/* Delete */}
                     <button
                       onClick={(e) => handleDelete(e, p.id)}
-                      className="font-mono text-xs text-muted-foreground hover:text-destructive transition-colors px-2 py-1"
+                      className="absolute top-2 left-2 z-10 font-mono text-sm text-white/50 hover:text-destructive bg-black/30 hover:bg-black/50 rounded-full w-6 h-6 flex items-center justify-center transition-colors"
+                      title="מחק פרויקט"
                     >
                       ×
                     </button>
