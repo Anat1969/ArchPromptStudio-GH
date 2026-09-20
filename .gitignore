@@ -31,3 +31,6 @@ dist-ssr
 .env
 .vite
 base44/.app.jsonc
+
+# Base44 data export/backup — contains user data & images, never commit (public repo)
+base44-export/

@@ -44,6 +44,20 @@ Classified for later migration off Base44:
   isolates the DB, so migration should start there.
 - **Config-bound**: `VITE_BASE44_APP_ID`, `VITE_BASE44_APP_BASE_URL` (env only).
 
+## Base44 data export / migration (Phase 1 done)
+- `scripts/export-base44.mjs` (`npm run export:base44`) backs up ALL projects +
+  downloads ALL images out of Base44 into `base44-export/` (gitignored — user data).
+  Read-only; touches nothing in Base44. Needs `BASE44_TOKEN` (from the logged-in
+  app: DevTools console `localStorage.getItem('base44_access_token')`); APP_ID and
+  APP_BASE_URL come from `.env.local`.
+- Output: `projects.json` (raw), `projects.local.json` (image URLs rewritten to
+  local paths), `images/`, `manifest.json` (url->local map + failures).
+- Verified: config loading + error path + build/lint; full run against the live
+  backend is the user's to run (needs their token). Not yet run end-to-end.
+- Phase 2 (not started): import the export into an independent backend
+  (Supabase recommended: DB + Storage + Auth) and repoint the app off Base44.
+  Nothing is lost meanwhile — the app still reads the live Base44 backend.
+
 ## Storage strategy (target)
 - GitHub: code + small static assets only.
 - Database: project data / metadata.
