@@ -7,113 +7,106 @@
 ## Purpose
 ArchPrompt Studio — an app for architects/designers that synthesizes two visual
 styles into a project, generates poetic descriptions and prompt-driven visual
-boards (materials / colors / mood), rooms and building-type visuals. UI is
-Hebrew / RTL. Exported from Base44 to become a standalone, GitHub-managed project.
+boards (materials / colors / mood), rooms and building-type visuals, and a
+magazine view. UI is Hebrew / RTL. Originally exported from Base44; now a
+standalone app hosted on Netlify with its own backend.
 
 ## Stack
 - Framework: React 18 + Vite 6
-- Language: JavaScript (JSX) + a little TypeScript; type-check via `jsconfig.json`
-- Styling: Tailwind CSS 3 + shadcn/ui (Radix primitives), `components.json`
+- Language: JavaScript (JSX); type-check via `jsconfig.json`
+- Styling: Tailwind CSS 3 + shadcn/ui (Radix), `components.json`
 - Routing: react-router-dom 6
 - Data/query: @tanstack/react-query
 - Package manager: npm (package-lock.json committed)
-- Backend today: **Base44** (SDK `@base44/sdk`) — auth, database, file storage
+- Backend: **Netlify Functions + Netlify Blobs** (no external DB, no Supabase)
+- Auth: **none** — the app is open (product decision)
 
-## Architecture / important directories
-- `src/api/base44Client.js` — single Base44 client instance
-- `src/lib/app-params.js` — reads app_id / token / backend URL (env + URL params)
-- `src/lib/AuthContext.jsx` — Base44 auth state
-- `src/lib/storage.js` — project CRUD; maps DB record <-> internal shape (the data layer)
-- `src/lib/promptEngine.js` — prompt/description generation logic
-- `src/pages/` — Landing, Home, Gallery, WorkScreen, MagazineViewer, OAuthConsent
-- `src/components/` — app components + `ui/` shadcn components
-- `base44/` — Base44 app config + entity schemas (`Project`, `User`)
+## Backend (Netlify-native)
+- `netlify/functions/projects.mjs` — projects CRUD. All projects live in ONE
+  Blobs index doc (store `projects`, key `all`) read with `consistency:'strong'`
+  so writes are visible immediately (Blobs `list()` is only eventually consistent).
+- `netlify/functions/upload.mjs` — POST raw image bytes -> Blobs store `images`;
+  returns `{ file_url: "/api/images?key=..." }`.
+- `netlify/functions/images.mjs` — GET `?key=` serves image bytes (strong read).
+- `src/api/projectsClient.js` — frontend fetch client: `projectsClient.{list,create,update,delete}`
+  + `uploadImage(file)`. Mirrors the old Base44 entity API so `lib/storage.js`
+  barely changed.
+- Routing: `netlify.toml` redirects `/api/*` -> `/.netlify/functions/:splat`,
+  then SPA fallback `/* -> /index.html`.
 
 ## Data model
-Entity `Project` (Base44): name, number, poetic_description, inspiration_image (URL),
-style_synthesis, visual_description, boards, rooms, building_types. See
-`base44/entities/Project.jsonc` and the `fromDB`/`toDB` mappers in `storage.js`.
+Project record (stored as-is in Blobs): name, number, poetic_description,
+inspiration_image (URL), style_synthesis, visual_description, boards, rooms,
+building_types, plus id/created_date/updated_date (server-assigned). `lib/storage.js`
+maps DB record <-> internal app shape (`fromDB`/`toDB`) — the seam other code uses.
 
-## Base44 dependencies (to reduce over time)
-Classified for later migration off Base44:
-- **Essential now**: auth (`base44.auth`), DB (`base44.entities.Project.*`),
-  file upload (`base44.integrations.Core.UploadFile` in `InspirationUpload.jsx`,
-  `PromptCard.jsx`).
-- **Replaceable later**: DB -> Postgres/Supabase; storage -> Supabase Storage /
-  R2 / S3; auth -> Supabase Auth or equivalent. `storage.js` is the seam that
-  isolates the DB, so migration should start there.
-- **Config-bound**: `VITE_BASE44_APP_ID`, `VITE_BASE44_APP_BASE_URL` (env only).
+## Base44 status
+- **Runtime no longer calls Base44.** Data, images and (removed) auth are all
+  off Base44. Verified live: app loads with no login redirect; full CRUD works.
+- Dead/unused files still in the tree (not imported anywhere, tree-shaken out):
+  `src/api/base44Client.js`, `src/lib/AuthContext.jsx`, `src/lib/app-params.js`,
+  `src/components/ProtectedRoute.jsx`, `src/components/UserNotRegisteredError.jsx`,
+  `src/pages/OAuthConsent.jsx`. `@base44/sdk` + `@base44/vite-plugin` are still
+  in package.json (the vite plugin also provides the dev `@/` alias + HMR — do
+  NOT remove it without adding a resolve alias). Safe cleanup for later.
+- `base44/` folder holds the original Base44 app config/entity schemas (reference).
 
-## Base44 data export / migration (Phase 1 done)
-- `scripts/export-base44.mjs` (`npm run export:base44`) backs up ALL projects +
-  downloads ALL images out of Base44 into `base44-export/` (gitignored — user data).
-  Read-only; touches nothing in Base44. Needs `BASE44_TOKEN` (from the logged-in
-  app: DevTools console `localStorage.getItem('base44_access_token')`); APP_ID and
-  APP_BASE_URL come from `.env.local`.
-- Output: `projects.json` (raw), `projects.local.json` (image URLs rewritten to
-  local paths), `images/`, `manifest.json` (url->local map + failures).
-- Verified: config loading + error path + build/lint; full run against the live
-  backend is the user's to run (needs their token). Not yet run end-to-end.
-- Phase 2 (not started): import the export into an independent backend
-  (Supabase recommended: DB + Storage + Auth) and repoint the app off Base44.
-  Nothing is lost meanwhile — the app still reads the live Base44 backend.
+## Data migration off Base44 (scripts)
+Two-step, run by the user (Base44 read needs their token; import hits the public API):
+1. `npm run export:base44` — backs up ALL projects + downloads ALL images from
+   Base44 into `base44-export/` (gitignored). Needs `BASE44_TOKEN` (logged-in app,
+   DevTools: `localStorage.getItem('base44_access_token')`); app id/url from `.env.local`.
+2. `npm run import:netlify` — uploads the export's images to `/api/upload` and
+   re-creates projects via `/api/projects` on the live site (default target
+   https://archpromptstudio.netlify.app). No Netlify credentials needed. Guarded
+   against double-import unless `IMPORT_FORCE=1`.
+- Status: scripts written + validated (syntax, config, error paths). NOT yet run
+  end-to-end (needs the user's Base44 token). Until run, the new store is empty.
 
-## Storage strategy (target)
-- GitHub: code + small static assets only.
-- Database: project data / metadata.
-- Object storage (Supabase Storage / Cloudflare R2 / S3): images & large files.
-- Do NOT store user images as Base64 in the DB or in Git. Base44 upload URLs are
-  the current image source — migrate to object storage before relying on them long term.
+## Deployment
+- Host: **Netlify**, connected to the GitHub repo (auto-deploys on push to `main`).
+- Live URL: https://archpromptstudio.netlify.app
+- Config: `netlify.toml` (build `npm run build` -> `dist`, functions dir, redirects).
+- Vite `base` is `/` (served from domain root).
+- GitHub Pages was tried and abandoned (static-only, can't proxy `/api`); disabled.
 
-## Secrets
-- No secrets in code (verified). Config comes from env vars.
-- `.env` / `.env.*` are gitignored; `.env.example` documents the vars.
+## Magazine light/dark theme
+- `MagazineViewer` has a sun/moon toggle (top bar) switching the whole magazine
+  between dark and light/white; persisted in localStorage (`magazine_theme`),
+  default dark. Implemented via CSS vars on `.mag-root[data-theme]` in `index.css`
+  (HSL channels so Tailwind arbitrary values keep opacity), used across
+  `MagazineViewer` + `MagazineSpread`.
+
+## Local dev
+- `npm run dev` (Vite) serves the UI but NOT the Netlify functions, so `/api/*`
+  won't work locally under plain vite. For full local backend use `netlify dev`
+  (netlify-cli is available via npx; needs `netlify login` + `netlify link`).
+- `.env.local` still holds the Base44 app id/url (only used by the export script now).
+
+## Secrets / privacy
+- No secrets in code. `.env*` gitignored (except `.env.example`).
+- `base44-export/` gitignored (user data — never commit to the public repo).
+- Note: no auth + public URL = anyone with the link can read/write. Accepted by
+  the user; a simple password gate can be added later if wanted.
 
 ## Build / validation
-- `npm install` → `npm run build` succeeds (outputs `./dist`).
-- `npm run dev` verified: with `.env.local` set (App ID + App Base URL), the
-  Vite proxy routes `/api` to the Base44 backend and the app reaches the real
-  Base44 login screen — i.e. backend connectivity confirmed. Login is required
-  (Base44 auth) to see project data.
-- Live values (kept only in local `.env.local`, never committed):
-  `VITE_BASE44_APP_ID=69c80849f1fbef3a6d3f0817`,
-  `VITE_BASE44_APP_BASE_URL=https://arch-prompt-flow.base44.app`.
-- Note: this project's `dev` script runs plain `vite`, which ignores an injected
-  PORT and starts at 5173 (incrementing if taken). If 5173 is busy, open the
-  actual port Vite printed / is listening on.
-
-## Known issues
-- `npm run lint` reports 3 pre-existing unused-import errors (from the Base44
-  export): `MigrateLocalStorage.jsx`, `Gallery.jsx`, `WorkScreen.jsx`.
-  Kept as-is in the baseline commit; safe to auto-fix (`npm run lint:fix`).
-- `npm audit` reports vulnerabilities in transitive deps — review before deploy.
+- `npm run build` succeeds; `npm run lint` clean (errors: 0).
+- Live verified: `/api/projects` CRUD consistent; create-project UI flow works.
 
 ## Do NOT delete / break
-- Base44 auth/DB/storage wiring while it is still the live backend.
-- `storage.js` data-shape mapping (DB <-> app) — other code depends on it.
-- User images / inspiration image URLs.
+- `netlify/functions/*` + `netlify.toml` redirects (the whole backend).
+- `src/api/projectsClient.js` and `storage.js` `fromDB`/`toDB` mapping.
+- The Blobs stores `projects` / `images` (live user data once populated).
+- The `@base44/vite-plugin` in `vite.config.js` (provides dev `@/` alias) unless
+  you add an explicit resolve alias.
 
 ## GitHub
 - Remote (source of truth): https://github.com/Anat1969/ArchPromptStudio-GH.git
 - Default branch: `main`.
 
-## Deployment (Netlify)
-- Config: `netlify.toml` (build `npm run build`, publish `dist`).
-- **Why Netlify, not GitHub Pages**: the app makes RELATIVE `/api/*` calls that
-  rely on a same-origin proxy to Base44 (the dev Vite proxy). GitHub Pages is
-  static-only (no proxy) so its API calls 404 — verified live. Netlify's
-  `[[redirects]]` proxy (`/api/* -> arch-prompt-flow.base44.app/api/:splat`,
-  status 200) replicates the dev proxy, so no CORS and no code changes.
-- SPA fallback: `/* -> /index.html` (status 200) in `netlify.toml`.
-- Build env is in `netlify.toml [build.environment]` (`VITE_BASE44_APP_ID`,
-  `VITE_BASE44_APP_BASE_URL`) — public client values, so no Netlify UI setup needed.
-- Vite `base` is `/` (served from domain root).
-- **Manual step (user)**: connect the repo in Netlify (Add new site -> Import
-  from GitHub -> ArchPromptStudio-GH). Netlify reads `netlify.toml` automatically.
-  Auto-deploys on every push to `main`. Live URL will be `https://<name>.netlify.app`.
-- GitHub Pages was tried and disabled (kept for history in git; workflow removed).
-
 ## Current state
-- Local folder is the active project; Base44 export lives here.
-- Git initialized; baseline commit = pristine Base44 export + `.env.example` +
-  this file, pushed to `main`. App builds. Ready for continued development from the repo.
+- Standalone app live on Netlify, own backend (Functions + Blobs), no Base44 at
+  runtime, no auth, magazine light/dark toggle. Store currently empty.
+- Remaining: user runs export+import to bring old Base44 content in; optional
+  cleanup of dead Base44 files/deps; optional favicon localization (index.html
+  still points to base44.com/logo_v2.svg).

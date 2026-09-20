@@ -10,7 +10,8 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
-    "export:base44": "node scripts/export-base44.mjs"
+    "export:base44": "node scripts/export-base44.mjs",
+    "import:netlify": "node scripts/import-to-netlify.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.48",
